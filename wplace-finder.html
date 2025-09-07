@@ -1,204 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="appTitle">wplace Empty Chunk Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
-      body {
-        font-family: "Inter", sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        background-color: #1a202c;
-        color: #e2e8f0;
-      }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
     </style>
-  </head>
-  <body class="flex items-center justify-center min-h-screen p-4">
-    <div
-      class="bg-gray-800 p-8 md:p-10 rounded-xl shadow-lg w-full max-w-lg text-center border border-gray-700"
-    >
-      <h1 class="text-3xl font-bold mb-4 text-white" id="mainTitle">
-        wplace Empty Chunk Finder
-      </h1>
-      <p class="text-gray-400 mb-6" id="descriptionText">
-        Click "Start" to begin searching for an unused tile location on the
-        server. The process will stop as soon as an empty chunk is found.
-      </p>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-gray-800 p-8 md:p-10 rounded-xl shadow-lg w-full max-w-lg text-center border border-gray-700">
+        <h1 class="text-3xl font-bold mb-4 text-white" id="mainTitle">wplace Empty Chunk Finder</h1>
+        <p class="text-gray-400 mb-6" id="descriptionText">
+            Click "Start" to begin searching for an unused tile location on the server. The process will stop as soon as an empty chunk is found.
+        </p>
 
-      <div class="space-y-4">
-        <div class="flex items-center justify-center space-x-2">
-          <input
-            type="checkbox"
-            id="reverseCheckbox"
-            class="form-checkbox h-5 w-5 text-indigo-600 rounded"
-          />
-          <label for="reverseCheckbox" class="text-gray-300"
-            >Work in reverse</label
-          >
-        </div>
+        <div class="space-y-4">
+            <div class="flex items-center justify-center space-x-2">
+                <input type="checkbox" id="reverseCheckbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded" />
+                <label for="reverseCheckbox" class="text-gray-300">Work in reverse</label>
+            </div>
 
-        <button
-          id="startButton"
-          class="w-full bg-indigo-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Start Search
-        </button>
-
-        <div id="statusMessage" class="min-h-[2rem] text-gray-400">
-          Awaiting your command...
-        </div>
-
-        <div id="resultContainer" class="hidden">
-          <p
-            class="font-semibold text-lg text-emerald-400 mb-2"
-            id="resultHeader"
-          >
-            Empty Chunk Found!
-          </p>
-          <div
-            class="bg-gray-900 p-3 rounded-md border border-gray-700 flex items-center space-x-2"
-          >
-            <input
-              type="text"
-              id="resultUrl"
-              readonly
-              class="flex-1 bg-transparent text-gray-200 font-mono text-sm break-all outline-none"
-            />
-            <button
-              id="copyButton"
-              class="bg-gray-700 text-white p-2 rounded-md transition-colors duration-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                <path
-                  d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-                />
-              </svg>
+            <button id="startButton"
+                    class="w-full bg-indigo-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                Start Search
             </button>
-          </div>
-          <a
-            id="resultLink"
-            href="#"
-            target="_blank"
-            class="mt-4 inline-block text-indigo-400 underline hover:text-indigo-300"
-          >
-            Open Link
-          </a>
+
+            <div id="statusMessage" class="min-h-[2rem] text-gray-400">
+                Awaiting your command...
+            </div>
+
+            <div id="resultContainer" class="hidden text-left space-y-4">
+                <p class="font-semibold text-lg mb-2" id="resultHeader">Empty Chunk Found!</p>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-400">wplace.live Link</p>
+                    <div class="bg-gray-900 p-3 rounded-md border border-gray-700 flex items-center space-x-2">
+                        <input type="text" id="wplaceLink" readonly
+                               class="flex-1 bg-transparent text-gray-200 font-mono text-sm break-all outline-none" />
+                        <button class="copy-btn bg-gray-700 text-white p-2 rounded-md transition-colors duration-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <a id="wplaceOpenBtn" href="#" target="_blank" class="w-full inline-block text-center mt-2 py-2 px-4 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-500 transition-colors duration-200">
+                        Open in wplace.live
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-400">Legacy PNG Link</p>
+                    <div class="bg-gray-900 p-3 rounded-md border border-gray-700 flex items-center space-x-2">
+                        <input type="text" id="pngLink" readonly
+                               class="flex-1 bg-transparent text-gray-200 font-mono text-sm break-all outline-none" />
+                        <button class="copy-btn bg-gray-700 text-white p-2 rounded-md transition-colors duration-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <a id="pngVerifyBtn" href="#" target="_blank" class="w-full inline-block text-center mt-2 py-2 px-4 rounded-lg bg-gray-700 text-white font-medium hover:bg-gray-600 transition-colors duration-200">
+                        make sure it's 404
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const startButton = document.getElementById("startButton");
-        const statusMessage = document.getElementById("statusMessage");
-        const resultContainer = document.getElementById("resultContainer");
-        const resultUrlInput = document.getElementById("resultUrl");
-        const resultLink = document.getElementById("resultLink");
-        const copyButton = document.getElementById("copyButton");
-        const reverseCheckbox = document.getElementById("reverseCheckbox");
-        const mainTitle = document.getElementById("mainTitle");
-        const descriptionText = document.getElementById("descriptionText");
-        const resultHeader = document.getElementById("resultHeader");
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup from the Python script
+            const N_TILES_X = 2048;
+            const N_TILES_Y = 2048;
+            const N_TILE_PIXELS_X = 1000;
+            const N_TILE_PIXELS_Y = 1000;
+            const N_PIXELS_X = N_TILES_X * N_TILE_PIXELS_X;
+            const N_PIXELS_Y = N_TILES_Y * N_TILE_PIXELS_Y;
 
-        // Copy logic adapted for browser compatibility within an iframe.
-        copyButton.addEventListener("click", () => {
-          resultUrlInput.select();
-          resultUrlInput.setSelectionRange(0, 99999); // For mobile devices
-          document.execCommand("copy");
-          // Display a custom message box instead of alert
-          showMessageBox("URL copied to clipboard!");
-        });
+            const LON_WEST = -180.0;
+            const LON_EAST = 180.0;
+            const LAT_NORTH = 85.05113;
+            const LAT_SOUTH = -85.05113;
 
-        function showMessageBox(message) {
-          const messageBox = document.createElement("div");
-          messageBox.className =
-            "fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50";
-          messageBox.innerHTML = `
+            const WPLACE_URL = "https://wplace.live";
+            const TILE_BASE_URL = "https://backend.wplace.live/files/s0/tiles";
+
+            // Set up Proj4JS for EPSG:3857 and EPSG:4326
+            proj4.defs("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
+            proj4.defs("EPSG:3857", "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs");
+
+            const FROM_LONLAT_TRAFO = proj4("EPSG:4326", "EPSG:3857");
+            const TO_LONLAT_TRAFO = proj4("EPSG:3857", "EPSG:4326");
+
+            const [WEST, NORTH] = FROM_LONLAT_TRAFO.forward([LON_WEST, LAT_NORTH]);
+            const [EAST, SOUTH] = FROM_LONLAT_TRAFO.forward([LON_EAST, LAT_SOUTH]);
+
+            // Replicate the rasterio affine transformation
+            const PIXEL_WIDTH = (EAST - WEST) / N_PIXELS_X;
+            const PIXEL_HEIGHT = (SOUTH - NORTH) / N_PIXELS_Y;
+            const affine_a = PIXEL_WIDTH;
+            const affine_b = 0;
+            const affine_c = WEST;
+            const affine_d = 0;
+            const affine_e = PIXEL_HEIGHT;
+            const affine_f = NORTH;
+
+            const pixel_to_lonlat = (col, row) => {
+                const x = affine_a * col + affine_b * row + affine_c;
+                const y = affine_d * col + affine_e * row + affine_f;
+                return TO_LONLAT_TRAFO.forward([x, y]);
+            };
+
+            const getLink = (tileX, tileY) => {
+                const pixel_x = tileX * N_TILE_PIXELS_X + N_TILE_PIXELS_X / 2;
+                const pixel_y = tileY * N_TILE_PIXELS_Y + N_TILE_PIXELS_Y / 2;
+                const [lon, lat] = pixel_to_lonlat(pixel_x, pixel_y);
+                const zoom = 15.908707249788225; // Constant from your previous link
+                return `${WPLACE_URL}/?lat=${lat}&lng=${lon}&zoom=${zoom}`;
+            };
+
+
+            const startButton = document.getElementById('startButton');
+            const statusMessage = document.getElementById('statusMessage');
+            const resultContainer = document.getElementById('resultContainer');
+            const wplaceLinkInput = document.getElementById('wplaceLink');
+            const pngLinkInput = document.getElementById('pngLink');
+            const wplaceOpenBtn = document.getElementById('wplaceOpenBtn');
+            const pngVerifyBtn = document.getElementById('pngVerifyBtn');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            const reverseCheckbox = document.getElementById('reverseCheckbox');
+            const mainTitle = document.getElementById('mainTitle');
+            const descriptionText = document.getElementById('descriptionText');
+            const resultHeader = document.getElementById('resultHeader');
+
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const inputToCopy = e.target.closest('.flex').querySelector('input');
+                    inputToCopy.select();
+                    inputToCopy.setSelectionRange(0, 99999); // For mobile devices
+                    document.execCommand('copy');
+                    showMessageBox('URL copied to clipboard!');
+                });
+            });
+            
+            function showMessageBox(message) {
+                const messageBox = document.createElement('div');
+                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50';
+                messageBox.innerHTML = `
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center">
                         <p class="text-white text-lg mb-4">${message}</p>
                         <button class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-500 focus:outline-none" onclick="this.parentNode.parentNode.remove()">OK</button>
                     </div>
                 `;
-          document.body.appendChild(messageBox);
-        }
-
-        const updateUI = (isReverse) => {
-          if (isReverse) {
-            mainTitle.textContent = "wplace Non-Empty Chunk Finder";
-            descriptionText.textContent =
-              'Click "Start" to begin searching for an existing tile location on the server. The process will stop as soon as a non-empty chunk is found.';
-            resultHeader.textContent = "Non-Empty Chunk Found!";
-          } else {
-            mainTitle.textContent = "wplace Empty Chunk Finder";
-            descriptionText.textContent =
-              'Click "Start" to begin searching for an unused tile location on the server. The process will stop as soon as an empty chunk is found.';
-            resultHeader.textContent = "Empty Chunk Found!";
-          }
-        };
-
-        reverseCheckbox.addEventListener("change", (e) => {
-          updateUI(e.target.checked);
-        });
-
-        startButton.addEventListener("click", async () => {
-          // Disable the button to prevent multiple clicks
-          startButton.disabled = true;
-          const isReverse = reverseCheckbox.checked;
-          statusMessage.textContent = "Searching...";
-          resultContainer.classList.add("hidden");
-
-          let found = false;
-          while (!found) {
-            try {
-              const num1 = Math.floor(Math.random() * 2048);
-              const num2 = Math.floor(Math.random() * 2048);
-              const url = `https://backend.wplace.live/files/s0/tiles/${num1}/${num2}.png`;
-
-              const exists = await new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = url;
-              });
-
-              const conditionMet = isReverse ? exists : !exists;
-
-              if (conditionMet) {
-                console.log(
-                  `Checking ${url}, Status: ${
-                    exists ? "200" : "404"
-                  } (inferred)`
-                );
-                resultUrlInput.value = url;
-                resultLink.href = url;
-                resultContainer.classList.remove("hidden");
-                statusMessage.textContent = "Search complete.";
-                found = true;
-              } else {
-                statusMessage.textContent = `Found ${
-                  isReverse ? "empty" : "existing"
-                } chunk at ${num1}/${num2}. Searching...`;
-              }
-            } catch (error) {
-              statusMessage.textContent = `An unexpected error occurred: ${error.message}`;
-              console.error("An unexpected error occurred:", error);
-              found = true;
+                document.body.appendChild(messageBox);
             }
 
-            await new Promise((resolve) => setTimeout(resolve, 333));
-          }
-          startButton.disabled = false;
+            const updateUI = (isReverse) => {
+                if (isReverse) {
+                    mainTitle.textContent = 'wplace Non-Empty Chunk Finder';
+                    descriptionText.textContent = 'Click "Start" to begin searching for an existing tile location on the server. The process will stop as soon as a non-empty chunk is found.';
+                    resultHeader.textContent = 'Non-Empty Chunk Found!';
+                } else {
+                    mainTitle.textContent = 'wplace Empty Chunk Finder';
+                    descriptionText.textContent = 'Click "Start" to begin searching for an unused tile location on the server. The process will stop as soon as an empty chunk is found.';
+                    resultHeader.textContent = 'Empty Chunk Found!';
+                }
+            };
+
+            reverseCheckbox.addEventListener('change', (e) => {
+                updateUI(e.target.checked);
+            });
+
+            startButton.addEventListener('click', async () => {
+                // Disable the button to prevent multiple clicks
+                startButton.disabled = true;
+                const isReverse = reverseCheckbox.checked;
+                statusMessage.textContent = 'Searching...';
+                resultContainer.classList.add('hidden');
+
+                let found = false;
+                while (!found) {
+                    try {
+                        const num1 = Math.floor(Math.random() * N_TILES_X);
+                        const num2 = Math.floor(Math.random() * N_TILES_Y);
+                        const url = `${TILE_BASE_URL}/${num1}/${num2}.png`;
+
+                        const exists = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(true);
+                            img.onerror = () => resolve(false);
+                            img.src = url;
+                        });
+
+                        const conditionMet = isReverse ? exists : !exists;
+
+                        if (conditionMet) {
+                            const resultText = `${isReverse ? 'Non-empty' : 'Empty'} chunk found at ${num1}/${num2}!`;
+                            statusMessage.textContent = resultText;
+                            resultHeader.textContent = resultText;
+                            wplaceLinkInput.value = getLink(num1, num2);
+                            wplaceOpenBtn.href = getLink(num1, num2);
+                            pngLinkInput.value = url;
+                            pngVerifyBtn.href = url;
+                            resultContainer.classList.remove('hidden');
+                            found = true;
+                        } else {
+                            statusMessage.textContent = `Found ${isReverse ? 'empty' : 'existing'} chunk at ${num1}/${num2}. Searching...`;
+                        }
+                    } catch (error) {
+                        statusMessage.textContent = `An unexpected error occurred: ${error.message}`;
+                        console.error('An unexpected error occurred:', error);
+                        found = true;
+                    }
+
+                    await new Promise(resolve => setTimeout(resolve, 333));
+                }
+                startButton.disabled = false;
+            });
         });
-      });
     </script>
-  </body>
+</body>
 </html>
