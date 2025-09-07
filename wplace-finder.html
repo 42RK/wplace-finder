@@ -14,6 +14,44 @@
             background-color: #1a202c;
             color: #e2e8f0;
         }
+        .square-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .square {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: 1px solid #4a5568; /* Grid line */
+        }
+        .square[data-status="empty"] {
+            background-color: #1f2937; /* Blackish */
+        }
+        .square[data-status="initiated"] {
+            background-color: #f3f4f6; /* Whiteish */
+        }
+        .chunk-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+            text-align: center;
+            font-size: 0.75rem; /* text-xs */
+            color: white;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -73,6 +111,15 @@
                     </a>
                 </div>
             </div>
+
+            <div id="neighborsContainer" class="hidden mt-6 text-center">
+                <button id="checkNeighborsBtn" class="w-full bg-emerald-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                    Check Neighbours
+                </button>
+                <div id="neighborsGrid" class="square-grid mt-4">
+                    <!-- Grid squares will be dynamically populated here -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -125,7 +172,7 @@
                 const pixel_x = tileX * N_TILE_PIXELS_X + N_TILE_PIXELS_X / 2;
                 const pixel_y = tileY * N_TILE_PIXELS_Y + N_TILE_PIXELS_Y / 2;
                 const [lon, lat] = pixel_to_lonlat(pixel_x, pixel_y);
-                const zoom = 15.908707249788225; // Constant from your previous link
+                const zoom = 15.908707249788225;
                 return `${WPLACE_URL}/?lat=${lat}&lng=${lon}&zoom=${zoom}`;
             };
 
@@ -142,12 +189,17 @@
             const mainTitle = document.getElementById('mainTitle');
             const descriptionText = document.getElementById('descriptionText');
             const resultHeader = document.getElementById('resultHeader');
+            const neighborsContainer = document.getElementById('neighborsContainer');
+            const checkNeighborsBtn = document.getElementById('checkNeighborsBtn');
+            const neighborsGrid = document.getElementById('neighborsGrid');
+
+            let foundChunkX, foundChunkY;
 
             copyButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     const inputToCopy = e.target.closest('.flex').querySelector('input');
                     inputToCopy.select();
-                    inputToCopy.setSelectionRange(0, 99999); // For mobile devices
+                    inputToCopy.setSelectionRange(0, 99999);
                     document.execCommand('copy');
                     showMessageBox('URL copied to clipboard!');
                 });
@@ -182,11 +234,11 @@
             });
 
             startButton.addEventListener('click', async () => {
-                // Disable the button to prevent multiple clicks
                 startButton.disabled = true;
                 const isReverse = reverseCheckbox.checked;
                 statusMessage.textContent = 'Searching...';
                 resultContainer.classList.add('hidden');
+                neighborsContainer.classList.add('hidden');
 
                 let found = false;
                 while (!found) {
@@ -205,14 +257,18 @@
                         const conditionMet = isReverse ? exists : !exists;
 
                         if (conditionMet) {
-                            const resultText = `${isReverse ? 'Non-empty' : 'Empty'} chunk found at ${num1}/${num2}!`;
+                            foundChunkX = num1;
+                            foundChunkY = num2;
+
+                            const resultText = `${isReverse ? 'Non-empty' : 'Empty'} chunk found at ${foundChunkX}/${foundChunkY}!`;
                             statusMessage.textContent = resultText;
                             resultHeader.textContent = resultText;
-                            wplaceLinkInput.value = getLink(num1, num2);
-                            wplaceOpenBtn.href = getLink(num1, num2);
+                            wplaceLinkInput.value = getLink(foundChunkX, foundChunkY);
+                            wplaceOpenBtn.href = getLink(foundChunkX, foundChunkY);
                             pngLinkInput.value = url;
                             pngVerifyBtn.href = url;
                             resultContainer.classList.remove('hidden');
+                            neighborsContainer.classList.remove('hidden');
                             found = true;
                         } else {
                             statusMessage.textContent = `Found ${isReverse ? 'empty' : 'existing'} chunk at ${num1}/${num2}. Searching...`;
@@ -226,6 +282,78 @@
                     await new Promise(resolve => setTimeout(resolve, 333));
                 }
                 startButton.disabled = false;
+            });
+
+            checkNeighborsBtn.addEventListener('click', async () => {
+                checkNeighborsBtn.disabled = true;
+                neighborsGrid.innerHTML = '';
+                const neighbors = [];
+                const offsets = [
+                    [-1, -1], [0, -1], [1, -1],
+                    [-1, 0], [0, 0], [1, 0],
+                    [-1, 1], [0, 1], [1, 1]
+                ];
+
+                for (let i = 0; i < 9; i++) {
+                    const square = document.createElement('div');
+                    square.className = 'square relative bg-gray-600 animate-pulse';
+
+                    const [dx, dy] = offsets[i];
+                    const neighborX = (foundChunkX + dx + N_TILES_X) % N_TILES_X;
+                    const neighborY = foundChunkY + dy;
+
+                    const label = document.createElement('div');
+                    label.className = 'chunk-label';
+                    label.innerHTML = `<span>X=${neighborX}</span><span>Y=${neighborY}</span>`;
+                    square.appendChild(label);
+
+                    neighborsGrid.appendChild(square);
+                    neighbors.push(square);
+                }
+
+                neighbors[4].classList.remove('bg-gray-600', 'animate-pulse');
+                neighbors[4].setAttribute('data-status', 'empty');
+                neighbors[4].setAttribute('title', 'empty');
+
+                for (let i = 0; i < offsets.length; i++) {
+                    if (i === 4) continue; // Skip the center tile
+
+                    const [dx, dy] = offsets[i];
+                    const neighborX = (foundChunkX + dx + N_TILES_X) % N_TILES_X;
+                    const neighborY = foundChunkY + dy;
+                    
+                    if (neighborY < 0 || neighborY >= N_TILES_Y) {
+                        neighbors[i].style.backgroundColor = 'gray';
+                        neighbors[i].setAttribute('title', 'out of bounds');
+                        neighbors[i].classList.remove('bg-gray-600', 'animate-pulse');
+                        continue;
+                    }
+
+                    const url = `${TILE_BASE_URL}/${neighborX}/${neighborY}.png`;
+
+                    try {
+                        const exists = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(true);
+                            img.onerror = () => resolve(false);
+                            img.src = url;
+                        });
+
+                        const status = exists ? 'initiated' : 'empty';
+                        const titleText = exists ? 'already initiated' : 'empty';
+
+                        neighbors[i].setAttribute('data-status', status);
+                        neighbors[i].setAttribute('title', titleText);
+                        neighbors[i].classList.remove('bg-gray-600', 'animate-pulse');
+
+                    } catch (error) {
+                        console.error(`Error checking neighbor at ${neighborX}/${neighborY}:`, error);
+                        neighbors[i].style.backgroundColor = 'red';
+                        neighbors[i].setAttribute('title', 'error');
+                        neighbors[i].classList.remove('bg-gray-600', 'animate-pulse');
+                    }
+                }
+                checkNeighborsBtn.disabled = false;
             });
         });
     </script>
