@@ -69,8 +69,23 @@
 
             <button id="startButton"
                     class="w-full bg-indigo-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                Start Search
+                Start Random Search
             </button>
+            
+            <button id="toggleManualSearchBtn" class="w-full bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                Show Manual Search
+            </button>
+
+            <div id="manualSearchContainer" class="flex flex-col space-y-2 text-left hidden">
+                <label for="manualX" class="text-sm font-medium text-gray-400">Manual Search (X, Y)</label>
+                <div class="flex space-x-2">
+                    <input type="number" id="manualX" placeholder="X Coordinate" class="w-1/2 bg-gray-900 text-gray-200 p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    <input type="number" id="manualY" placeholder="Y Coordinate" class="w-1/2 bg-gray-900 text-gray-200 p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <button id="manualButton" class="w-full bg-indigo-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Check Chunk
+                </button>
+            </div>
 
             <div id="statusMessage" class="min-h-[2rem] text-gray-400">
                 Awaiting your command...
@@ -178,6 +193,11 @@
 
 
             const startButton = document.getElementById('startButton');
+            const manualButton = document.getElementById('manualButton');
+            const toggleManualSearchBtn = document.getElementById('toggleManualSearchBtn');
+            const manualSearchContainer = document.getElementById('manualSearchContainer');
+            const manualX = document.getElementById('manualX');
+            const manualY = document.getElementById('manualY');
             const statusMessage = document.getElementById('statusMessage');
             const resultContainer = document.getElementById('resultContainer');
             const wplaceLinkInput = document.getElementById('wplaceLink');
@@ -233,46 +253,66 @@
                 updateUI(e.target.checked);
             });
 
-            startButton.addEventListener('click', async () => {
-                startButton.disabled = true;
-                const isReverse = reverseCheckbox.checked;
-                statusMessage.textContent = 'Searching...';
+            toggleManualSearchBtn.addEventListener('click', () => {
+                manualSearchContainer.classList.toggle('hidden');
+                if (manualSearchContainer.classList.contains('hidden')) {
+                    toggleManualSearchBtn.textContent = 'Show Manual Search';
+                } else {
+                    toggleManualSearchBtn.textContent = 'Hide Manual Search';
+                }
+            });
+
+            async function checkChunk(x, y, isReverse) {
                 resultContainer.classList.add('hidden');
                 neighborsContainer.classList.add('hidden');
+                
+                if (x < 0 || x >= N_TILES_X || y < 0 || y >= N_TILES_Y) {
+                    statusMessage.textContent = `Coordinates out of bounds. X must be between 0 and ${N_TILES_X-1}, Y between 0 and ${N_TILES_Y-1}.`;
+                    return false;
+                }
+
+                const url = `${TILE_BASE_URL}/${x}/${y}.png`;
+                const exists = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                });
+                
+                const conditionMet = isReverse ? exists : !exists;
+
+                if (conditionMet) {
+                    foundChunkX = x;
+                    foundChunkY = y;
+                    const resultText = `${isReverse ? 'Non-empty' : 'Empty'} chunk found at ${foundChunkX}/${foundChunkY}!`;
+                    statusMessage.textContent = resultText;
+                    resultHeader.textContent = resultText;
+                    wplaceLinkInput.value = getLink(foundChunkX, foundChunkY);
+                    wplaceOpenBtn.href = getLink(foundChunkX, foundChunkY);
+                    pngLinkInput.value = url;
+                    pngVerifyBtn.href = url;
+                    resultContainer.classList.remove('hidden');
+                    neighborsContainer.classList.remove('hidden');
+                    return true;
+                } else {
+                    statusMessage.textContent = `Found ${isReverse ? 'empty' : 'existing'} chunk at ${x}/${y}. Try another.`;
+                    return false;
+                }
+            }
+
+            startButton.addEventListener('click', async () => {
+                startButton.disabled = true;
+                manualButton.disabled = true;
+                toggleManualSearchBtn.disabled = true;
+                const isReverse = reverseCheckbox.checked;
+                statusMessage.textContent = 'Searching...';
 
                 let found = false;
                 while (!found) {
                     try {
                         const num1 = Math.floor(Math.random() * N_TILES_X);
                         const num2 = Math.floor(Math.random() * N_TILES_Y);
-                        const url = `${TILE_BASE_URL}/${num1}/${num2}.png`;
-
-                        const exists = await new Promise((resolve) => {
-                            const img = new Image();
-                            img.onload = () => resolve(true);
-                            img.onerror = () => resolve(false);
-                            img.src = url;
-                        });
-
-                        const conditionMet = isReverse ? exists : !exists;
-
-                        if (conditionMet) {
-                            foundChunkX = num1;
-                            foundChunkY = num2;
-
-                            const resultText = `${isReverse ? 'Non-empty' : 'Empty'} chunk found at ${foundChunkX}/${foundChunkY}!`;
-                            statusMessage.textContent = resultText;
-                            resultHeader.textContent = resultText;
-                            wplaceLinkInput.value = getLink(foundChunkX, foundChunkY);
-                            wplaceOpenBtn.href = getLink(foundChunkX, foundChunkY);
-                            pngLinkInput.value = url;
-                            pngVerifyBtn.href = url;
-                            resultContainer.classList.remove('hidden');
-                            neighborsContainer.classList.remove('hidden');
-                            found = true;
-                        } else {
-                            statusMessage.textContent = `Found ${isReverse ? 'empty' : 'existing'} chunk at ${num1}/${num2}. Searching...`;
-                        }
+                        found = await checkChunk(num1, num2, isReverse);
                     } catch (error) {
                         statusMessage.textContent = `An unexpected error occurred: ${error.message}`;
                         console.error('An unexpected error occurred:', error);
@@ -282,6 +322,32 @@
                     await new Promise(resolve => setTimeout(resolve, 333));
                 }
                 startButton.disabled = false;
+                manualButton.disabled = false;
+                toggleManualSearchBtn.disabled = false;
+            });
+
+            manualButton.addEventListener('click', async () => {
+                startButton.disabled = true;
+                manualButton.disabled = true;
+                toggleManualSearchBtn.disabled = true;
+                const isReverse = reverseCheckbox.checked;
+                const x = parseInt(manualX.value, 10);
+                const y = parseInt(manualY.value, 10);
+
+                if (isNaN(x) || isNaN(y)) {
+                    statusMessage.textContent = "Please enter valid numbers for X and Y coordinates.";
+                    startButton.disabled = false;
+                    manualButton.disabled = false;
+                    toggleManualSearchBtn.disabled = false;
+                    return;
+                }
+
+                statusMessage.textContent = `Checking chunk at ${x}/${y}...`;
+                await checkChunk(x, y, isReverse);
+                
+                startButton.disabled = false;
+                manualButton.disabled = false;
+                toggleManualSearchBtn.disabled = false;
             });
 
             checkNeighborsBtn.addEventListener('click', async () => {
@@ -340,11 +406,18 @@
                         });
 
                         const status = exists ? 'initiated' : 'empty';
-                        const titleText = exists ? 'already initiated' : 'empty';
+                        const titleText = exists ? 'Click to view chunk PNG' : 'empty';
 
                         neighbors[i].setAttribute('data-status', status);
                         neighbors[i].setAttribute('title', titleText);
                         neighbors[i].classList.remove('bg-gray-600', 'animate-pulse');
+
+                        if (status === 'initiated') {
+                            neighbors[i].classList.add('cursor-pointer');
+                            neighbors[i].addEventListener('click', () => {
+                                window.open(url, '_blank');
+                            });
+                        }
 
                     } catch (error) {
                         console.error(`Error checking neighbor at ${neighborX}/${neighborY}:`, error);
