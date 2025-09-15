@@ -135,6 +135,27 @@
                     <!-- Grid squares will be dynamically populated here -->
                 </div>
             </div>
+
+            <!-- Teleporter Section -->
+            <div id="teleporterContainer" class="flex flex-col space-y-2 text-left mt-6">
+                <h2 class="text-xl font-bold text-white">Teleporter</h2>
+                <p class="text-sm font-medium text-gray-400">Enter coordinates to view the chunk on wplace.live.</p>
+                <div class="flex space-x-2">
+                    <input type="number" id="teleporterX" min="0" max="2047" placeholder="X (0-2047)" class="w-1/2 bg-gray-900 text-gray-200 p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <input type="number" id="teleporterY" min="0" max="2047" placeholder="Y (0-2047)" class="w-1/2 bg-gray-900 text-gray-200 p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                </div>
+                <div class="bg-gray-900 p-3 rounded-md border border-gray-700 flex items-center space-x-2">
+                    <a id="teleporterLink" href="#" target="_blank" class="flex-1 text-gray-400 font-mono text-sm break-all outline-none no-underline hover:underline" style="pointer-events: none;">Enter coordinates above...</a>
+                    <button id="teleporterCopyBtn" class="copy-btn bg-gray-700 text-white p-2 rounded-md transition-colors duration-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- End Teleporter Section -->
+
         </div>
     </div>
 
@@ -213,6 +234,12 @@
             const checkNeighborsBtn = document.getElementById('checkNeighborsBtn');
             const neighborsGrid = document.getElementById('neighborsGrid');
 
+            // Teleporter elements
+            const teleporterX = document.getElementById('teleporterX');
+            const teleporterY = document.getElementById('teleporterY');
+            const teleporterLink = document.getElementById('teleporterLink');
+            const teleporterCopyBtn = document.getElementById('teleporterCopyBtn');
+
             let foundChunkX, foundChunkY;
 
             copyButtons.forEach(button => {
@@ -223,6 +250,19 @@
                     document.execCommand('copy');
                     showMessageBox('URL copied to clipboard!');
                 });
+            });
+
+            teleporterCopyBtn.addEventListener('click', () => {
+                const url = teleporterLink.href;
+                if (url && url !== '#') {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showMessageBox('Teleporter link copied!');
+                }
             });
             
             function showMessageBox(message) {
@@ -428,6 +468,32 @@
                 }
                 checkNeighborsBtn.disabled = false;
             });
+            
+            // Teleporter functionality
+            function updateTeleporterLink() {
+                const x = parseInt(teleporterX.value, 10);
+                const y = parseInt(teleporterY.value, 10);
+                
+                if (!isNaN(x) && !isNaN(y) && x >= 0 && x < N_TILES_X && y >= 0 && y < N_TILES_Y) {
+                    const url = getLink(x, y);
+                    teleporterLink.href = url;
+                    teleporterLink.textContent = url;
+                    teleporterLink.style.pointerEvents = 'auto'; // Enable clicking
+                    teleporterLink.classList.remove('text-gray-400');
+                    teleporterLink.classList.add('text-indigo-400');
+                    teleporterCopyBtn.disabled = false;
+                } else {
+                    teleporterLink.href = '#';
+                    teleporterLink.textContent = 'Enter valid coordinates...';
+                    teleporterLink.style.pointerEvents = 'none'; // Disable clicking
+                    teleporterLink.classList.add('text-gray-400');
+                    teleporterLink.classList.remove('text-indigo-400');
+                    teleporterCopyBtn.disabled = true;
+                }
+            }
+
+            teleporterX.addEventListener('input', updateTeleporterLink);
+            teleporterY.addEventListener('input', updateTeleporterLink);
         });
     </script>
 </body>
